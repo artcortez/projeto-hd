@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+:root {
+  font-family: "Inter", sans-serif;
+  color: #172033;
+  background: #f4f7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f4f7fa;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* =========================
+   CABEÇALHO
+   ========================= */
+
+header {
+  text-align: center;
+  padding: 48px 20px 30px;
+}
+
+header h1 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  color: #14213d;
+}
+
+header p {
+  margin: 12px 0 0;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: #64748b;
+  letter-spacing: 0.01em;
+}
+
+/* =========================
+   CONTEÚDO
+   ========================= */
+
+main {
+  width: min(1400px, 94%);
+  margin: 0 auto;
+}
+
+main > h2 {
+  text-align: center;
+  margin: 0 0 24px;
+  font-family: "Manrope", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #263653;
+}
+
+/* =========================
+   MAPA
+   ========================= */
+
+.leaflet-container {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 12px 35px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+/* =========================
+   BOTÃO CONTAR HISTÓRIA
+   ========================= */
+
+main > button {
+  display: block;
+  margin: 24px auto 50px;
+  padding: 18px 34px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+
+  background: rgba(37, 99, 235, 0.88);
+  color: white;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  box-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+
+  backdrop-filter: blur(10px);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+main > button:hover {
+  background: rgba(29, 78, 216, 0.94);
+
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 15px 32px rgba(37, 99, 235, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+main > button:active {
+  transform: translateY(-1px);
+}
+
+/* =========================
+   FORMULÁRIO
+   ========================= */
+
+section {
+  margin: 0 auto 30px;
+  padding: 30px;
+  max-width: 850px;
+
+  background: rgba(255, 255, 255, 0.88);
+
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.08);
+
+  backdrop-filter: blur(14px);
+}
+
+section h2 {
+  margin-top: 0;
+
+  font-family: "Manrope", sans-serif;
+  font-size: 1.6rem;
+  color: #172033;
+}
+
+section label {
+  display: inline-block;
+  margin-bottom: 7px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+section input,
+section textarea,
+section select {
+  width: 100%;
+  padding: 12px 14px;
+
+  border: 1px solid #d7dee8;
+  border-radius: 10px;
+
+  background: #fff;
+
+  color: #172033;
+  font-size: 0.95rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+section textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+section input:focus,
+section textarea:focus,
+section select:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* =========================
+   BOTÕES DO FORMULÁRIO
+   ========================= */
+
+section button {
+  margin-right: 10px;
+  padding: 11px 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+section button:hover {
+  transform: translateY(-1px);
+}
+
+/* =========================
+   RESPONSIVO
+   ========================= */
+
+@media (max-width: 700px) {
+  header {
+    padding-top: 32px;
+  }
+
+  main {
+    width: 94%;
+  }
+
+  .leaflet-container {
+    height: 60vh !important;
+    min-height: 400px;
+    border-radius: 14px;
+  }
+
+  section {
+    padding: 22px;
+  }
+
+  main > button {
+    width: 100%;
+    padding: 17px 20px;
+  }
+}
