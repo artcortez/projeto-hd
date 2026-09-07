@@ -29,7 +29,7 @@ function MapClickHandler({ onMapClick }) {
 }
 
 
-function Map({ stories, onMapClick }) {
+function Map({ stories, onMapClick, selectedLocation }) {
   const [fullscreenImage, setFullscreenImage] = useState(null)
 
   return (
@@ -51,6 +51,27 @@ function Map({ stories, onMapClick }) {
         <MapClickHandler
           onMapClick={onMapClick}
         />
+
+        {selectedLocation && (
+          <Marker
+            position={selectedLocation}
+            draggable={true}
+            eventHandlers={{
+              dragend: (event) => {
+                const marker = event.target
+                const position = marker.getLatLng()
+
+                onMapClick(position)
+              }
+            }}
+          >
+            <Popup>
+              <strong>Novo local da memória</strong>
+              <br />
+              Arraste o marcador para ajustar o local.
+            </Popup>
+          </Marker>
+        )}
 
 
         {stories.map((story) => (
@@ -161,8 +182,23 @@ function Map({ stories, onMapClick }) {
                     Categoria:
                   </strong>{" "}
 
-                  {story.category ||
-                    "Não informada"}
+                  {story.categories && story.categories.length > 0 ? (
+                    <div className="popup-tags">
+                      {story.categories.map((category) => (
+                        <span
+                          key={category}
+                          className="popup-tag"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>
+                      <strong>Categoria:</strong>{" "}
+                      Categoria não informada
+                    </p>
+                  )}
                 </p>
 
 

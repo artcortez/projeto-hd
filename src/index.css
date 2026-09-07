@@ -254,3 +254,260 @@ section button:hover {
     padding: 17px 20px;
   }
 }
+
+.search-container {
+  position: relative;
+  width: min(600px, 90%);
+  margin: 0 auto 25px;
+}
+
+.search-container input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 15px 50px 15px 20px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 16px;
+  color: #1e293b;
+  outline: none;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.06);
+  transition: 0.2s ease;
+}
+
+.search-container input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.search-container input::placeholder {
+  color: #94a3b8;
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.clear-search:hover {
+  background: #cbd5e1;
+}
+
+/* ========================================
+   LAYOUT DE CRIAÇÃO DE MEMÓRIA
+======================================== */
+
+.memory-creation-layout {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  margin: 0 auto 30px;
+}
+
+/* MAPA */
+
+.memory-map-panel {
+  flex: 1 1 60%;
+  min-width: 0;
+  width: 60%;
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* FORMULÁRIO */
+
+.memory-form-panel {
+  flex: 0 1 40%;
+  min-width: 0;
+  width: 40%;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* CABEÇALHO DOS PAINÉIS */
+
+.memory-panel-header {
+  margin-bottom: 18px;
+}
+
+.memory-panel-header h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.memory-panel-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* MAPA DENTRO DO PAINEL */
+
+.memory-map-panel .leaflet-container {
+  width: 100% !important;
+  height: 500px !important;
+  border-radius: 12px;
+}
+
+/* FORMULÁRIO */
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: white;
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+/* IMAGEM */
+
+.image-preview {
+  margin-top: 12px;
+}
+
+.image-preview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+/* ÁUDIO */
+
+.audio-button,
+.delete-audio-button {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 15px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.audio-button {
+  background: #e0edff;
+  color: #1d4ed8;
+}
+
+.delete-audio-button {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.audio-preview audio {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* BOTÕES */
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+  padding-top: 18px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cancel-button,
+.save-button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.save-button {
+  background: #2563eb;
+  color: white;
+}
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media (max-width: 900px) {
+
+  .memory-creation-layout {
+    flex-direction: column !important;
+  }
+
+  .memory-map-panel,
+  .memory-form-panel {
+    width: 100%;
+    flex: none;
+  }
+
+  .memory-form-panel {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+

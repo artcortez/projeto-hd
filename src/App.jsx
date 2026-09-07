@@ -3,16 +3,23 @@ import Map from "./components/Map"
 import { supabase } from "./lib/supabaseClient"
 
 function App() {
+  // =========================
+  // ESTADOS
+  // =========================
+
   const [stories, setStories] = useState([])
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [showForm, setShowForm] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const [authorName, setAuthorName] = useState("")
   const [memoryDate, setMemoryDate] = useState("")
-  const [category, setCategory] = useState("")
   const [placeName, setPlaceName] = useState("")
   const [title, setTitle] = useState("")
   const [storyText, setStoryText] = useState("")
+
+  // VÁRIAS TAGS
+  const [categories, setCategories] = useState([])
 
   const [isRecording, setIsRecording] = useState(false)
   const [audioBlob, setAudioBlob] = useState(null)
@@ -23,6 +30,26 @@ function App() {
 
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
+
+  // =========================
+  // OPÇÕES DE TAGS
+  // =========================
+
+  const categoryOptions = [
+    "Família",
+    "Infância",
+    "Lugar",
+    "Trabalho",
+    "Educação",
+    "Festa",
+    "Conflito",
+    "Cotidiano",
+    "História local"
+  ]
+
+  // =========================
+  // CARREGAR HISTÓRIAS
+  // =========================
 
   useEffect(() => {
     fetchStories()
@@ -49,9 +76,19 @@ function App() {
       authorName: story.author_name,
       placeName: story.place_name,
       memoryDate: story.memory_date,
-      category: story.category,
+
+      // NOVO SISTEMA DE TAGS
+      // Se uma memória antiga ainda tiver "category",
+      // ela também será transformada em uma tag.
+      categories:
+        story.categories ||
+        (story.category
+          ? [story.category]
+          : []),
+
       audioUrl: story.audio_url,
       imageUrl: story.image_url,
+
       location: [
         story.latitude,
         story.longitude
@@ -60,6 +97,29 @@ function App() {
 
     setStories(formattedStories)
   }
+
+  // =========================
+  // SELECIONAR / DESELECIONAR TAG
+  // =========================
+
+  function toggleCategory(category) {
+    setCategories((currentCategories) => {
+      if (currentCategories.includes(category)) {
+        return currentCategories.filter(
+          (item) => item !== category
+        )
+      }
+
+      return [
+        ...currentCategories,
+        category
+      ]
+    })
+  }
+
+  // =========================
+  // GRAVAÇÃO DE ÁUDIO
+  // =========================
 
   async function startRecording() {
     try {
@@ -73,13 +133,17 @@ function App() {
       const mediaRecorder =
         new MediaRecorder(stream)
 
-      mediaRecorderRef.current = mediaRecorder
+      mediaRecorderRef.current =
+        mediaRecorder
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
+      mediaRecorder.ondataavailable =
+        (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(
+              event.data
+            )
+          }
         }
-      }
 
       mediaRecorder.onstop = () => {
         const blob = new Blob(
@@ -133,6 +197,10 @@ function App() {
     setAudioUrl(null)
   }
 
+  // =========================
+  // IMAGEM
+  // =========================
+
   function handleImageChange(event) {
     const file = event.target.files[0]
 
@@ -157,6 +225,10 @@ function App() {
     setImagePreviewUrl(previewUrl)
   }
 
+  // =========================
+  // MAPA
+  // =========================
+
   function handleMapClick(location) {
     setSelectedLocation([
       location.lat,
@@ -170,6 +242,10 @@ function App() {
     setShowForm(true)
   }
 
+  // =========================
+  // CANCELAR
+  // =========================
+
   function handleCancel() {
     setShowForm(false)
     setSelectedLocation(null)
@@ -177,7 +253,7 @@ function App() {
     setAuthorName("")
     setPlaceName("")
     setMemoryDate("")
-    setCategory("")
+    setCategories([])
     setTitle("")
     setStoryText("")
 
@@ -196,7 +272,12 @@ function App() {
     setImagePreviewUrl(null)
   }
 
+  // =========================
+  // SALVAR HISTÓRIA
+  // =========================
+
   async function handleSaveStory() {
+    // AUTOR
     if (!authorName.trim()) {
       alert(
         "Informe o nome de quem está contando a história."
@@ -204,6 +285,7 @@ function App() {
       return
     }
 
+    // TÍTULO E HISTÓRIA
     if (
       !title.trim() ||
       !storyText.trim()
@@ -214,6 +296,7 @@ function App() {
       return
     }
 
+    // LOCALIZAÇÃO
     if (!selectedLocation) {
       alert(
         "Escolha um local no mapa antes de salvar."
@@ -369,7 +452,7 @@ function App() {
     }
 
     // =========================
-    // SALVAR HISTÓRIA NO BANCO
+    // SALVAR NO SUPABASE
     // =========================
 
     const {
@@ -388,8 +471,15 @@ function App() {
           memory_date:
             memoryDate || null,
 
+          // AQUI ESTÃO AS VÁRIAS TAGS
+          categories:
+            categories.length > 0 ? categories : [],
+
+          // Mantém compatibilidade com o campo antigo `category`.
+          // A primeira tag é gravada nele, enquanto todas as tags
+          // continuam sendo gravadas no campo `categories`.
           category:
-            category || null,
+            categories.length > 0 ? categories[0] : null,
 
           title:
             title,
@@ -437,18 +527,25 @@ function App() {
       id: data[0].id,
       title: data[0].title,
       text: data[0].text,
+
       authorName:
         data[0].author_name,
+
       placeName:
         data[0].place_name,
+
       memoryDate:
         data[0].memory_date,
-      category:
-        data[0].category,
+
+      categories:
+        data[0].categories || [],
+
       audioUrl:
         data[0].audio_url,
+
       imageUrl:
         data[0].image_url,
+
       location: [
         data[0].latitude,
         data[0].longitude
@@ -469,379 +566,468 @@ function App() {
     )
   }
 
+  // =========================
+  // BUSCA
+  // =========================
+
+  const filteredStories =
+    stories.filter((story) => {
+      const search =
+        searchTerm
+          .toLowerCase()
+          .trim()
+
+      if (!search) {
+        return true
+      }
+
+      return (
+        story.title
+          ?.toLowerCase()
+          .includes(search) ||
+
+        story.text
+          ?.toLowerCase()
+          .includes(search) ||
+
+        story.authorName
+          ?.toLowerCase()
+          .includes(search) ||
+
+        story.placeName
+          ?.toLowerCase()
+          .includes(search) ||
+
+        story.categories?.some(
+          (category) =>
+            category
+              .toLowerCase()
+              .includes(search)
+        )
+      )
+    })
+
+  // =========================
+  // INTERFACE
+  // =========================
+
   return (
     <div>
       <header>
-        <h1>Mapa de Memórias</h1>
+        <h1>mapeando memórias</h1>
 
         <p>
-          Histórias que vivem nos lugares.
+          histórias que vivem nos lugares.
         </p>
       </header>
 
       <main>
         <h2>
-          Explore as memórias
+          explore as memórias:
         </h2>
 
-        {showForm && (
-          <section>
-            <h2>
-              Contar uma história
-            </h2>
+        {/* =========================
+            BUSCA
+        ========================= */}
 
-            {selectedLocation ? (
-              <p>
-                📍 Localização escolhida:{" "}
-                {selectedLocation[0].toFixed(5)}
-                ,{" "}
-                {selectedLocation[1].toFixed(5)}
-              </p>
-            ) : (
-              <p>
-                📍 Clique no mapa para escolher
-                onde a memória aconteceu.
-              </p>
-            )}
+        <div className="search-container">
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(
+                event.target.value
+              )
+            }
+            placeholder="🔎 Buscar memórias..."
+            aria-label="Buscar memórias"
+          />
 
-            {/* =========================
-                AUTOR
-            ========================= */}
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() =>
+                setSearchTerm("")
+              }
+              className="clear-search"
+              aria-label="Limpar busca"
+            >
+              ×
+            </button>
+          )}
+        </div>
 
-            <div>
-              <label>
-                Quem está contando?
-              </label>
+        {/* =========================
+            FORMULÁRIO
+        ========================= */}
 
-              <br />
-
-              <input
-                type="text"
-                value={authorName}
-                onChange={(event) =>
-                  setAuthorName(
-                    event.target.value
-                  )
-                }
-                placeholder="Ex.: Maria da Silva"
-              />
-            </div>
-
-            <br />
+        {showForm ? (
+          <div className="memory-creation-layout">
 
             {/* =========================
-                DATA
+                MAPA
             ========================= */}
 
-            <div>
-              <label>
-                Onde aconteceu?
-              </label>
+            <div className="memory-map-panel">
+              <div className="memory-panel-header">
+                <h2>
+                  Escolha o local
+                </h2>
 
-              <br />
+                <p>
+                  Clique no mapa para escolher
+                  o lugar da memória. Depois,
+                  você pode arrastar o marcador
+                  para ajustar a posição.
+                </p>
+              </div>
 
-              <input
-                type="text"
-                value={placeName}
-                onChange={(event) =>
-                  setPlaceName(event.target.value)
-                }
-                placeholder="Ex.: Comunidade de Comboeiro"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label>
-                Quando aconteceu?
-              </label>
-
-              <br />
-
-              <input
-                type="date"
-                value={memoryDate}
-                onChange={(event) =>
-                  setMemoryDate(
-                    event.target.value
-                  )
+              <Map
+                stories={filteredStories}
+                onMapClick={handleMapClick}
+                selectedLocation={
+                  selectedLocation
                 }
               />
             </div>
 
-            <br />
-
             {/* =========================
-                CATEGORIA
+                FORMULÁRIO
             ========================= */}
 
-            <div>
-              <label>
-                Categoria
-              </label>
+            <section className="memory-form-panel">
 
-              <br />
+              <div className="memory-panel-header">
+                <h2>
+                  Contar uma história
+                </h2>
 
-              <select
-                value={category}
-                onChange={(event) =>
-                  setCategory(
-                    event.target.value
-                  )
-                }
-              >
-                <option value="">
-                  Selecione uma categoria
-                </option>
-
-                <option value="pessoa">
-                  Pessoa
-                </option>
-
-                <option value="lugar">
-                  Lugar
-                </option>
-
-                <option value="acontecimento">
-                  Acontecimento
-                </option>
-
-                <option value="cotidiano">
-                  Cotidiano
-                </option>
-
-                <option value="trabalho">
-                  Trabalho
-                </option>
-
-                <option value="familia">
-                  Família
-                </option>
-
-                <option value="outro">
-                  Outro
-                </option>
-              </select>
-            </div>
-
-            <br />
-
-            {/* =========================
-                TÍTULO
-            ========================= */}
-
-            <div>
-              <label>
-                Título
-              </label>
-
-              <br />
-
-              <input
-                type="text"
-                value={title}
-                onChange={(event) =>
-                  setTitle(
-                    event.target.value
-                  )
-                }
-                placeholder="Ex.: A enchente de 1974"
-              />
-            </div>
-
-            <br />
-
-            {/* =========================
-                HISTÓRIA
-            ========================= */}
-
-            <div>
-              <label>
-                História
-              </label>
-
-              <br />
-
-              <textarea
-                rows="8"
-                value={storyText}
-                onChange={(event) =>
-                  setStoryText(
-                    event.target.value
-                  )
-                }
-                placeholder="Conte a história..."
-              />
-            </div>
-
-            <br />
-
-            {/* =========================
-                IMAGEM
-            ========================= */}
-
-            <div>
-              <label>
-                Fotografia ou imagem da memória
-              </label>
-
-              <br />
-              <br />
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={
-                  handleImageChange
-                }
-              />
-
-              {imagePreviewUrl && (
-                <div
-                  style={{
-                    marginTop: "10px"
-                  }}
-                >
+                {selectedLocation ? (
                   <p>
-                    Pré-visualização:
+                    📍 Localização escolhida:{" "}
+                    {selectedLocation[0].toFixed(5)}
+                    {" "}
+                    ,
+                    {" "}
+                    {selectedLocation[1].toFixed(5)}
                   </p>
-
-                  <img
-                    src={
-                      imagePreviewUrl
-                    }
-                    alt="Pré-visualização da memória"
-                    style={{
-                      maxWidth:
-                        "300px",
-                      maxHeight:
-                        "200px",
-                      objectFit:
-                        "cover",
-                      borderRadius:
-                        "6px"
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            <br />
-
-            {/* =========================
-                ÁUDIO
-            ========================= */}
-
-            <div>
-              <label>
-                Relato oral
-              </label>
-
-              <br />
-              <br />
-
-              {!isRecording &&
-                !audioUrl && (
-                  <button
-                    type="button"
-                    onClick={
-                      startRecording
-                    }
-                  >
-                    🎙️ Gravar relato
-                  </button>
+                ) : (
+                  <p>
+                    📍 Clique no mapa para escolher
+                    onde a memória aconteceu.
+                  </p>
                 )}
+              </div>
 
-              {isRecording && (
-                <div>
-                  <p>
-                    🔴 Gravando...
-                  </p>
+              {/* =========================
+                  AUTOR
+              ========================= */}
 
-                  <button
-                    type="button"
-                    onClick={
-                      stopRecording
+              <div className="form-group">
+                <label>
+                  Quem está contando?
+                </label>
+
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(event) =>
+                    setAuthorName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Ex.: Maria da Silva"
+                />
+              </div>
+
+              {/* =========================
+                  LUGAR
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Onde aconteceu?
+                </label>
+
+                <input
+                  type="text"
+                  value={placeName}
+                  onChange={(event) =>
+                    setPlaceName(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Ex.: Comunidade de Comboeiro"
+                />
+              </div>
+
+              {/* =========================
+                  DATA
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Quando aconteceu?
+                </label>
+
+                <input
+                  type="date"
+                  value={memoryDate}
+                  onChange={(event) =>
+                    setMemoryDate(
+                      event.target.value
+                    )
+                  }
+                />
+              </div>
+
+              {/* =========================
+                  TAGS
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Tags da memória
+                </label>
+
+                <p className="form-help">
+                  Selecione uma ou mais categorias.
+                </p>
+
+                <div className="category-tags">
+                  {categoryOptions.map(
+                    (category) => {
+                      const selected =
+                        categories.includes(
+                          category
+                        )
+
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          className={
+                            selected
+                              ? "category-tag selected"
+                              : "category-tag"
+                          }
+                          onClick={() =>
+                            toggleCategory(
+                              category
+                            )
+                          }
+                        >
+                          {selected
+                            ? "✓ "
+                            : ""}
+                          {category}
+                        </button>
+                      )
                     }
-                  >
-                    ⏹️ Parar gravação
-                  </button>
+                  )}
                 </div>
-              )}
 
-              {audioUrl &&
-                !isRecording && (
-                  <div>
+                {categories.length > 0 && (
+                  <p className="selected-tags-text">
+                    Selecionadas:{" "}
+                    {categories.join(" · ")}
+                  </p>
+                )}
+              </div>
+
+              {/* =========================
+                  TÍTULO
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Título
+                </label>
+
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) =>
+                    setTitle(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Ex.: A enchente de 1974"
+                />
+              </div>
+
+              {/* =========================
+                  HISTÓRIA
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  História
+                </label>
+
+                <textarea
+                  rows="8"
+                  value={storyText}
+                  onChange={(event) =>
+                    setStoryText(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Conte a história..."
+                />
+              </div>
+
+              {/* =========================
+                  IMAGEM
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Fotografia ou imagem da memória
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={
+                    handleImageChange
+                  }
+                />
+
+                {imagePreviewUrl && (
+                  <div className="image-preview">
                     <p>
-                      ✅ Gravação realizada.
+                      Pré-visualização:
                     </p>
 
-                    <audio
-                      controls
-                      src={audioUrl}
+                    <img
+                      src={
+                        imagePreviewUrl
+                      }
+                      alt="Pré-visualização da memória"
                     />
+                  </div>
+                )}
+              </div>
 
-                    <br />
-                    <br />
+              {/* =========================
+                  ÁUDIO
+              ========================= */}
+
+              <div className="form-group">
+                <label>
+                  Relato oral
+                </label>
+
+                {!isRecording &&
+                  !audioUrl && (
+                    <button
+                      type="button"
+                      onClick={
+                        startRecording
+                      }
+                      className="audio-button"
+                    >
+                      🎙️ Gravar relato
+                    </button>
+                  )}
+
+                {isRecording && (
+                  <div className="recording-area">
+                    <p>
+                      🔴 Gravando...
+                    </p>
 
                     <button
                       type="button"
                       onClick={
-                        deleteRecording
+                        stopRecording
                       }
+                      className="audio-button"
                     >
-                      🗑️ Apagar gravação
+                      ⏹️ Parar gravação
                     </button>
                   </div>
                 )}
-            </div>
 
-            <br />
+                {audioUrl &&
+                  !isRecording && (
+                    <div className="audio-preview">
+                      <p>
+                        ✅ Gravação realizada.
+                      </p>
 
+                      <audio
+                        controls
+                        src={audioUrl}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={
+                          deleteRecording
+                        }
+                        className="delete-audio-button"
+                      >
+                        🗑️ Apagar gravação
+                      </button>
+                    </div>
+                  )}
+              </div>
+
+              {/* =========================
+                  BOTÕES
+              ========================= */}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  onClick={
+                    handleCancel
+                  }
+                  className="cancel-button"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleSaveStory
+                  }
+                  className="save-button"
+                >
+                  Salvar história
+                </button>
+              </div>
+
+            </section>
+          </div>
+        ) : (
+          <>
             {/* =========================
-                BOTÕES
+                MAPA NORMAL
             ========================= */}
 
-            <button
-              type="button"
-              onClick={
-                handleCancel
+            <Map
+              stories={filteredStories}
+              onMapClick={handleMapClick}
+              selectedLocation={
+                selectedLocation
               }
-            >
-              Cancelar
-            </button>
+            />
 
             <button
               type="button"
               onClick={
-                handleSaveStory
+                handleOpenForm
               }
+              className="new-story-button"
             >
-              Salvar história
+              + Contar uma história
             </button>
-          </section>
+          </>
         )}
-
-        {/* =========================
-            MAPA
-        ========================= */}
-
-        <Map
-          stories={stories}
-          onMapClick={
-            handleMapClick
-          }
-        />
-
-        <button
-          type="button"
-          onClick={
-            handleOpenForm
-          }
-        >
-          + Contar uma história
-        </button>
       </main>
     </div>
   )
